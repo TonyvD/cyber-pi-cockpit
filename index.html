@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CYBER PI — Wereldcommandocentrum</title>
+<style>
+:root{--cyan:#39e6ff;--blue:#087eb0;--amber:#ff9b16;--glass:rgba(1,12,23,.94);--line:#09bce9}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020812;color:#e7faff;font-family:Arial,Helvetica,sans-serif}
+#screen{position:relative;width:100vw;height:100dvh;overflow:hidden;background:#020812}
+#cockpit{width:100%;height:100%;object-fit:fill;display:block}
+.panel{position:absolute;background:linear-gradient(145deg,#031522,#020914);border:1px solid #08bde9;border-radius:12px;box-shadow:inset 0 0 18px rgba(0,174,255,.12),0 0 13px rgba(0,157,255,.2);padding:clamp(7px,.75vw,13px);overflow:hidden}
+.panel h2{font-size:clamp(10px,1.1vw,17px);letter-spacing:.08em;color:#55eaff;margin:0 0 8px;text-transform:uppercase}
+#net{left:.8%;top:17.3%;width:20.7%;height:19.5%}
+#earth{left:.8%;top:39.1%;width:20.7%;height:22.5%}
+#net .status{color:#25ff9a;font-weight:bold;font-size:clamp(11px,1.1vw,16px);margin:3px 0 8px}
+.metric{display:flex;justify-content:space-between;gap:8px;border-top:1px solid rgba(52,197,255,.16);padding:5px 0;font-size:clamp(9px,.85vw,13px)}
+.metric b{color:#fff}
+#worldweather{right:.9%;top:17.3%;width:20.9%;height:19.5%;background:linear-gradient(145deg,#031522,#020914)}
+#worldweather .mainweather{font-size:clamp(18px,2vw,30px);font-weight:bold;color:#5beaff;margin:5px 0}
+#worldweather .sub{font-size:clamp(9px,.8vw,12px);color:#c5e8f2}
+#worldclock{position:absolute;left:22.8%;right:22.8%;bottom:1.6%;height:19%;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;pointer-events:none}
+.clockcard{background:rgba(0,10,21,.94);border:1px solid #079ccc;border-radius:8px;padding:7px 9px;box-shadow:0 0 12px #00668a66;min-width:0}
+.clockcard .country{font-size:clamp(8px,.72vw,11px);color:#5beaff;font-weight:bold;letter-spacing:.08em}
+.clockcard .time{font-size:clamp(16px,1.7vw,25px);font-weight:bold;margin:2px 0;color:white;font-variant-numeric:tabular-nums}
+.clockcard .city{font-size:clamp(8px,.7vw,11px);color:#c1e8f4;white-space:nowrap}
+#tabs{position:absolute;top:0;left:23%;width:57%;height:9%;display:flex;gap:1%;z-index:4}
+#tabs button{flex:1;background:transparent;border:0;color:transparent;cursor:pointer}
+#tabs button:focus-visible{outline:2px solid var(--cyan)}
+#clocktop{position:absolute;right:1.3%;top:1.1%;font-weight:bold;font-size:clamp(12px,1.7vw,25px);text-align:right;text-shadow:0 1px 8px #000;pointer-events:none}
+#clocktop small{display:block;font-size:.45em;font-weight:normal}
+#drawer{display:none;position:absolute;z-index:8;left:22%;right:22%;top:11%;bottom:22%;background:#020b16;border:1px solid var(--cyan);border-radius:14px;padding:16px;box-shadow:0 0 35px #008bc9;overflow:auto}
+#drawer.open{display:block}
+#drawer h1{font-size:clamp(16px,2vw,26px);color:var(--cyan);margin:0 0 12px}
+#drawer .close{position:absolute;right:12px;top:10px;background:#07324a;color:#aaf5ff;border:1px solid #1acfff;border-radius:6px;padding:6px 10px;cursor:pointer}
+#cities{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.citycard{border:1px solid #087eaa;border-radius:9px;padding:10px;background:linear-gradient(145deg,#061b2d,#020a15)}
+.citycard .place{color:#59eaff;font-size:12px;font-weight:bold;letter-spacing:.06em}
+.citycard .time{font-size:clamp(19px,2.3vw,30px);font-weight:bold;margin:3px 0;font-variant-numeric:tabular-nums}
+.citycard .weather{font-size:13px;color:#e8faff}
+.citycard .detail{font-size:11px;color:#9ccbd9;margin-top:4px}
+#footnote{font-size:10px;color:#8db6c7;margin-top:10px}
+@media(max-width:700px){
+ #net{width:31%;height:20%}#earth{width:31%;height:22%}
+ #worldweather{width:31%;height:20%}
+ #worldclock{left:1%;right:1%;height:16%;bottom:1%;gap:3px}
+ .clockcard{padding:4px}.clockcard .city{white-space:normal}
+ #drawer{left:3%;right:3%;top:10%;bottom:19%}#cities{grid-template-columns:repeat(2,1fr)}
+ #tabs{left:23%;width:57%}
+}
+</style></head>
+<body><main id="screen">
+<img id="cockpit" src="cockpit.jpg" alt="Cyber Pi cockpit met aarde en wereld in beeld">
+<!-- Nieuwe panelen bedekken de oude, niet-relevante vlucht- en systeemlabels uit de achtergrondillustratie. -->
+<section class="panel" id="net"><h2>Wereldnetwerk</h2><div class="status">● OPENBARE DATA ONLINE</div>
+<div class="metric"><span>Internetstatus</span><b>Publieke bronnen</b></div>
+<div class="metric"><span>Wereldklokken</span><b>10 steden</b></div>
+<div class="metric"><span>Weerfeeds</span><b id="feedstatus">Verbinden…</b></div>
+</section>
+<section class="panel" id="earth" style="top:39.1%;height:47%;border-color:#ff4b72;background:#030817;box-shadow:inset 0 0 28px rgba(255,25,80,.14),0 0 20px rgba(255,30,80,.35);display:flex;flex-direction:column">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:5px">
+ <h2 style="color:#9feaff;letter-spacing:.08em;margin:0">GLOBAL CYBER THREAT UPDATE</h2>
+ <span style="font-size:9px;color:#ff6c8b;white-space:nowrap">THREAT INTEL</span>
+</div>
+<div class="status" id="threatstatus" style="color:#ff8ca3;font-size:clamp(8px,.72vw,11px);margin:6px 0 2px">● CISA threat feed laden…</div>
+<div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden">
+<img src="cyber-threat-reference.jpg" alt="Global Cyber Threat Update wereldkaart" style="display:block;width:100%;height:100%;max-height:100%;object-fit:contain;object-position:center;background:#020914"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px">
+ <div style="background:#170b19;border:1px solid #7b2945;border-radius:5px;padding:5px 7px"><div style="font-size:8px;color:#ff9db1">CISA KEV CATALOGUS</div><div id="kevcount" style="font-size:17px;font-weight:bold;color:#fff">—</div><div style="font-size:8px;color:#b8cddd">actief misbruikte kwetsbaarheden</div></div>
+ <div style="background:#170b19;border:1px solid #7b2945;border-radius:5px;padding:5px 7px"><div style="font-size:8px;color:#ff9db1">BRONUPDATE</div><div id="kevupdate" style="font-size:13px;font-weight:bold;color:#fff">—</div><div style="font-size:8px;color:#b8cddd">CISA openbare catalogus</div></div>
+</div>
+<div id="threatnote" style="font-size:8px;color:#a9bacb;margin-top:4px">Hotspots zijn visueel; CISA publiceert kwetsbaarheden, geen live aanvalslocaties.</div>
+</section>
+<section class="panel" id="worldweather"><h2>Weer wereldwijd</h2><div class="mainweather" id="summarytemp">--°C</div><div class="sub" id="summary">Weerdata voor de geselecteerde steden laden…</div></section>
+<div id="clocktop">--:--:--<small>WERELD COMMANDO // ROTTERDAM</small></div>
+<div id="worldclock">
+ <div class="clockcard"><div class="country">NEDERLAND</div><div class="time" data-tz="Europe/Amsterdam">--:--</div><div class="city">Rotterdam · Amsterdam</div></div>
+ <div class="clockcard"><div class="country">ENGELAND</div><div class="time" data-tz="Europe/London">--:--</div><div class="city">Londen</div></div>
+ <div class="clockcard"><div class="country">VERENIGDE STATEN</div><div class="time" data-tz="America/New_York">--:--</div><div class="city">New York · Chicago · Denver · Los Angeles</div></div>
+ <div class="clockcard"><div class="country">AUSTRALIË</div><div class="time" data-tz="Australia/Sydney">--:--</div><div class="city">Sydney · Melbourne · Perth · Brisbane</div></div>
+</div>
+<nav id="tabs" aria-label="Cockpitnavigatie">
+<button aria-label="Command" data-view="command"></button><button aria-label="Navigatie" data-view="navigation"></button><button aria-label="Weer en radar" data-view="weather"></button><button aria-label="Satellieten" data-view="satellite"></button><button aria-label="Systemen" data-view="systems"></button>
+</nav>
+<section id="drawer"><button class="close" id="close">Sluiten ✕</button><h1 id="drawertitle">Wereldweer & lokale tijden</h1><div id="cities"></div><div id="footnote">Tijden zijn live en volgen automatisch zomer- en wintertijd. Weer wordt periodiek vernieuwd via Open-Meteo. Niet elke bron is realtime.</div></section>
+</main>
+<script>
+const locations=[
+ {name:'ROTTERDAM',country:'NEDERLAND',tz:'Europe/Amsterdam',lat:51.9244,lon:4.4777},
+ {name:'AMSTERDAM',country:'NEDERLAND',tz:'Europe/Amsterdam',lat:52.3676,lon:4.9041},
+ {name:'LONDEN',country:'ENGELAND',tz:'Europe/London',lat:51.5072,lon:-0.1276},
+ {name:'NEW YORK',country:'VS · OOST',tz:'America/New_York',lat:40.7128,lon:-74.0060},
+ {name:'CHICAGO',country:'VS · CENTRAAL',tz:'America/Chicago',lat:41.8781,lon:-87.6298},
+ {name:'DENVER',country:'VS · BERG',tz:'America/Denver',lat:39.7392,lon:-104.9903},
+ {name:'LOS ANGELES',country:'VS · WEST',tz:'America/Los_Angeles',lat:34.0522,lon:-118.2437},
+ {name:'SYDNEY',country:'AUSTRALIË · OOST',tz:'Australia/Sydney',lat:-33.8688,lon:151.2093},
+ {name:'MELBOURNE',country:'AUSTRALIË · ZUIDOOST',tz:'Australia/Melbourne',lat:-37.8136,lon:144.9631},
+ {name:'PERTH',country:'AUSTRALIË · WEST',tz:'Australia/Perth',lat:-31.9505,lon:115.8605},
+ {name:'BRISBANE',country:'AUSTRALIË · OOST',tz:'Australia/Brisbane',lat:-27.4698,lon:153.0251}
+];
+const fmt=(tz,opts)=>new Intl.DateTimeFormat('nl-NL',{timeZone:tz,...opts});
+function updateClocks(){
+ const now=new Date();
+ document.querySelectorAll('[data-tz]').forEach(el=>el.textContent=fmt(el.dataset.tz,{hour:'2-digit',minute:'2-digit',hour12:false}).format(now));
+ document.getElementById('clocktop').innerHTML=fmt('Europe/Amsterdam',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(now)+'<small>WERELD COMMANDO // ROTTERDAM</small>';
+}
+updateClocks();setInterval(updateClocks,1000);
+const drawer=document.getElementById('drawer'),title=document.getElementById('drawertitle');
+document.querySelectorAll('#tabs button').forEach(btn=>btn.addEventListener('click',()=>{
+ const view=btn.dataset.view;
+ const titles={command:'CYBER PI — Wereldcommandocentrum',navigation:'Wereldregio’s & tijdzones',weather:'Wereldweer & lokale tijden',satellite:'Satellieten & aardobservatie',systems:'Databronnen & status'};
+ title.textContent=titles[view];drawer.classList.add('open');
+}));
+document.getElementById('close').onclick=()=>drawer.classList.remove('open');
+function icon(code){if(code===0)return '☀️';if([1,2].includes(code))return '🌤️';if(code===3)return '☁️';if([45,48].includes(code))return '🌫️';if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code))return '🌧️';if([71,73,75,77,85,86].includes(code))return '❄️';if([95,96,99].includes(code))return '⛈️';return '🌡️'}
+function weatherText(code){if(code===0)return 'Helder';if([1,2].includes(code))return 'Licht bewolkt';if(code===3)return 'Bewolkt';if([45,48].includes(code))return 'Mist';if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code))return 'Regen/buien';if([71,73,75,77,85,86].includes(code))return 'Sneeuw';if([95,96,99].includes(code))return 'Onweer';return 'Actueel weer'}
+async function loadWeather(){
+ const cities=document.getElementById('cities');
+ try{
+  const url='https://api.open-meteo.com/v1/forecast?latitude='+locations.map(x=>x.lat).join(',')+'&longitude='+locations.map(x=>x.lon).join(',')+'&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto';
+  const res=await fetch(url);if(!res.ok)throw new Error('feed');const data=await res.json();const rows=Array.isArray(data)?data:[data];
+  cities.innerHTML='';
+  locations.forEach((loc,i)=>{
+   const c=rows[i]?.current;
+   const temp=c?Math.round(c.temperature_2m)+'°C':'—';
+   const desc=c?weatherText(c.weather_code):'Geen data';
+   const wind=c?Math.round(c.wind_speed_10m)+' km/u':'—';
+   const humidity=c?Math.round(c.relative_humidity_2m)+'%':'—';
+   const time=fmt(loc.tz,{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
+   const card=document.createElement('article');card.className='citycard';
+   card.innerHTML=`<div class="place">${loc.country} · ${loc.name}</div><div class="time">${time}</div><div class="weather">${c?icon(c.weather_code):'—'} ${temp} · ${desc}</div><div class="detail">Wind ${wind} · Vocht ${humidity}</div>`;
+   cities.appendChild(card);
+  });
+  const valid=rows.map(x=>x.current?.temperature_2m).filter(x=>typeof x==='number');
+  document.getElementById('summarytemp').textContent=valid.length?Math.round(valid.reduce((a,b)=>a+b,0)/valid.length)+'°C gemiddeld':'—';
+  document.getElementById('summary').textContent=`Actueel weer opgehaald voor ${valid.length} van ${locations.length} steden wereldwijd.`;
+  document.getElementById('feedstatus').textContent=`${valid.length}/${locations.length} steden`;
+ }catch(e){
+  document.getElementById('feedstatus').textContent='Niet beschikbaar';
+  document.getElementById('summarytemp').textContent='—';
+  document.getElementById('summary').textContent='Weerfeed niet bereikbaar. Open de online HTTPS-versie voor live weer; wereldklokken blijven werken.';
+  cities.innerHTML='<div class="citycard">Weerdata niet beschikbaar. Controleer de internetverbinding en probeer opnieuw.</div>';
+ }
+}
+loadWeather();setInterval(loadWeather,600000);
+
+async function loadEarthquakes(){
+ const count=document.getElementById('quakecount');
+ try{
+  const response=await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson');
+  if(!response.ok)throw new Error('USGS');
+  const data=await response.json();
+  const quakes=(data.features||[]).filter(f=>f.properties&&typeof f.properties.mag==='number');
+  count.textContent=`● ${quakes.length} bevingen gemeld (24 uur)`;
+  if(quakes.length){
+   quakes.sort((a,b)=>b.properties.mag-a.properties.mag);
+   const q=quakes[0];
+   document.getElementById('quakemag').textContent='M '+q.properties.mag.toFixed(1);
+   document.getElementById('quakeloc').textContent=q.properties.place||'Onbekend';
+  }else{
+   document.getElementById('quakemag').textContent='Geen meldingen';
+   document.getElementById('quakeloc').textContent='—';
+  }
+  document.getElementById('quakeupdate').textContent=fmt('Europe/Amsterdam',{hour:'2-digit',minute:'2-digit'}).format(new Date());
+ }catch(e){
+  count.textContent='● USGS-feed niet bereikbaar';
+  document.getElementById('quakemag').textContent='—';
+  document.getElementById('quakeloc').textContent='Geen verbinding';
+ }
+}
+
+async function loadCyberThreats(){
+ const status=document.getElementById('threatstatus');
+ try{
+  const response=await fetch('https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json');
+  if(!response.ok)throw new Error('CISA feed');
+  const data=await response.json();
+  const vulns=data.vulnerabilities||[];
+  document.getElementById('kevcount').textContent=vulns.length.toLocaleString('nl-NL');
+  document.getElementById('kevupdate').textContent=data.dateReleased||'Onbekend';
+  status.textContent='● CISA-dreigingsgegevens bijgewerkt';
+ }catch(e){
+  status.textContent='● CISA-feed niet bereikbaar; online HTTPS-versie controleren';
+  document.getElementById('kevcount').textContent='Geen verbinding';
+  document.getElementById('kevupdate').textContent='—';
+ }
+}
+loadCyberThreats();setInterval(loadCyberThreats,3600000);
+
+</script></body></html>
