@@ -15,9 +15,17 @@
 #net .status{color:#25ff9a;font-weight:bold;font-size:clamp(11px,1.1vw,16px);margin:3px 0 8px}
 .metric{display:flex;justify-content:space-between;gap:8px;border-top:1px solid rgba(52,197,255,.16);padding:5px 0;font-size:clamp(9px,.85vw,13px)}
 .metric b{color:#fff}
-#worldweather{right:.9%;top:17.3%;width:20.9%;height:19.5%;background:linear-gradient(145deg,#031522,#020914)}
+#worldweather{right:.9%;top:17.3%;width:20.9%;height:34%;background:linear-gradient(145deg,#031522,#020914)}
 #worldweather .mainweather{font-size:clamp(18px,2vw,30px);font-weight:bold;color:#5beaff;margin:5px 0}
 #worldweather .sub{font-size:clamp(9px,.8vw,12px);color:#c5e8f2}
+#weathergrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px}
+.weathermini{border:1px solid #087eaa;border-radius:7px;background:rgba(0,20,35,.85);padding:6px;min-width:0}
+.weathermini .wcity{font-size:clamp(8px,.72vw,11px);color:#65eaff;font-weight:bold;letter-spacing:.04em}
+.weathermini .wmain{display:flex;align-items:center;gap:6px;margin:3px 0}
+.weathermini .wicon{font-size:clamp(18px,1.7vw,25px)}
+.weathermini .wtemp{font-size:clamp(15px,1.45vw,22px);font-weight:bold;color:white}
+.weathermini .wdesc{font-size:clamp(8px,.68vw,10px);color:#c5e8f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.weathermini .wdetail{font-size:clamp(7px,.62vw,9px);color:#8fb9c9;margin-top:3px}
 #worldclock{position:absolute;left:22.8%;right:22.8%;bottom:1.6%;height:19%;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;pointer-events:none}
 .clockcard{background:rgba(0,10,21,.94);border:1px solid #079ccc;border-radius:8px;padding:7px 9px;box-shadow:0 0 12px #00668a66;min-width:0}
 .clockcard .country{font-size:clamp(8px,.72vw,11px);color:#5beaff;font-weight:bold;letter-spacing:.08em}
@@ -70,7 +78,7 @@
 </div>
 <div id="threatnote" style="font-size:8px;color:#a9bacb;margin-top:4px">Hotspots zijn visueel; CISA publiceert kwetsbaarheden, geen live aanvalslocaties.</div>
 </section>
-<section class="panel" id="worldweather"><h2>Weer wereldwijd</h2><div class="mainweather" id="summarytemp">--°C</div><div class="sub" id="summary">Weerdata voor de geselecteerde steden laden…</div></section>
+<section class="panel" id="worldweather"><h2>Weer wereldwijd</h2><div class="mainweather" id="summarytemp">--°C gemiddeld</div><div class="sub" id="summary">Weerdata voor de geselecteerde steden laden…</div><div id="weathergrid"><div class="weathermini">Weerdata laden…</div></div></section>
 <div id="clocktop">--:--:--<small>WERELD COMMANDO // ROTTERDAM</small></div>
 <div id="worldclock">
  <div class="clockcard"><div class="country">NEDERLAND</div><div class="time" data-tz="Europe/Amsterdam">--:--</div><div class="city">Rotterdam · Amsterdam</div></div>
@@ -132,8 +140,14 @@ async function loadWeather(){
   });
   const valid=rows.map(x=>x.current?.temperature_2m).filter(x=>typeof x==='number');
   document.getElementById('summarytemp').textContent=valid.length?Math.round(valid.reduce((a,b)=>a+b,0)/valid.length)+'°C gemiddeld':'—';
-  document.getElementById('summary').textContent=`Actueel weer opgehaald voor ${valid.length} van ${locations.length} steden wereldwijd.`;
+  document.getElementById('summary').textContent=`Live weer · ${valid.length}/${locations.length} steden`;
   document.getElementById('feedstatus').textContent=`${valid.length}/${locations.length} steden`;
+  const featured=[0,2,3,7];
+  document.getElementById('weathergrid').innerHTML=featured.map(i=>{
+   const loc=locations[i],c=rows[i]?.current;
+   if(!c)return '<div class="weathermini">Geen data</div>';
+   return `<div class="weathermini"><div class="wcity">${loc.name}</div><div class="wmain"><span class="wicon">${icon(c.weather_code)}</span><span class="wtemp">${Math.round(c.temperature_2m)}°C</span></div><div class="wdesc">${weatherText(c.weather_code)}</div><div class="wdetail">Wind ${Math.round(c.wind_speed_10m)} km/u · Vocht ${Math.round(c.relative_humidity_2m)}%</div></div>`;
+  }).join('');
  }catch(e){
   document.getElementById('feedstatus').textContent='Niet beschikbaar';
   document.getElementById('summarytemp').textContent='—';
