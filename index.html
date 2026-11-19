@@ -47,6 +47,12 @@
 .citycard .weather{font-size:13px;color:#e8faff}
 .citycard .detail{font-size:11px;color:#9ccbd9;margin-top:4px}
 #footnote{font-size:10px;color:#8db6c7;margin-top:10px}
+#radar-live{position:absolute;z-index:6;right:.9%;top:51.5%;width:20.9%;height:37.5%;border:1px solid #09c9ef;border-radius:12px;overflow:hidden;background:#061522;box-shadow:0 0 18px #00bce966}
+#radar-live h2{position:absolute;z-index:700;top:0;left:0;right:0;margin:0;padding:9px 10px;background:linear-gradient(180deg,rgba(0,12,24,.96),rgba(0,12,24,.65));color:#5beaff;font-size:clamp(10px,1.05vw,16px);letter-spacing:.07em}
+#radar-map{position:absolute;inset:35px 0 24px}
+#radar-stamp{position:absolute;z-index:700;bottom:0;left:0;right:0;padding:5px 8px;background:rgba(0,10,20,.9);font-size:clamp(8px,.65vw,10px);color:#bfefff}
+#radar-live .leaflet-container{background:#071523;font:inherit}
+@media(max-width:700px){#radar-live{right:.9%;top:39%;width:31%;height:27%}#radar-map{inset:30px 0 22px}}
 @media(max-width:700px){
  #net{width:31%;height:20%}#earth{width:31%;height:22%}
  #worldweather{width:31%;height:20%}
@@ -79,6 +85,7 @@
 <div id="threatnote" style="font-size:8px;color:#a9bacb;margin-top:4px">Hotspots zijn visueel; CISA publiceert kwetsbaarheden, geen live aanvalslocaties.</div>
 </section>
 <section class="panel" id="worldweather"><h2>Weer wereldwijd</h2><div class="mainweather" id="summarytemp">--°C gemiddeld</div><div class="sub" id="summary">Weerdata voor de geselecteerde steden laden…</div><div id="weathergrid"><div class="weathermini">Weerdata laden…</div></div></section>
+<section id="radar-live"><h2>NEDERLANDSE BUIENRADAR</h2><div id="radar-map"></div><div id="radar-stamp">Radar laden… · Data by RainViewer</div></section>
 <div id="clocktop">--:--:--<small>WERELD COMMANDO // ROTTERDAM</small></div>
 <div id="worldclock">
  <div class="clockcard"><div class="country">NEDERLAND</div><div class="time" data-tz="Europe/Amsterdam">--:--</div><div class="city">Rotterdam · Amsterdam</div></div>
@@ -92,6 +99,37 @@
 <section id="drawer"><button class="close" id="close">Sluiten ✕</button><h1 id="drawertitle">Wereldweer & lokale tijden</h1><div id="cities"></div><div id="footnote">Tijden zijn live en volgen automatisch zomer- en wintertijd. Weer wordt periodiek vernieuwd via Open-Meteo. Niet elke bron is realtime.</div></section>
 </main>
 <script>
+// Live neerslagradar: RainViewer historische radarbeelden, geanimeerd.
+async function startLiveRadar(){
+ const stamp=document.getElementById('radar-stamp');
+ try{
+  if(!window.L){
+   const css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(css);
+   await new Promise((resolve,reject)=>{const js=document.createElement('script');js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';js.onload=resolve;js.onerror=reject;document.head.appendChild(js);});
+  }
+  const map=L.map('radar-map',{zoomControl:false,attributionControl:false,scrollWheelZoom:false,dragging:false,doubleClickZoom:false}).setView([52.1,5.3],5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:7,subdomains:'abc',attribution:'© OpenStreetMap'}).addTo(map);
+  L.control.attribution({position:'bottomright',prefix:false}).addTo(map);
+  let layer=null,frames=[],frameIndex=0,timer=null;
+  async function refreshFrames(){
+   const response=await fetch('https://api.rainviewer.com/public/weather-maps.json',{cache:'no-store'});
+   if(!response.ok)throw new Error('Radarbron niet bereikbaar');
+   const data=await response.json();frames=(data.radar?.past||[]).slice(-8);
+   if(!frames.length)throw new Error('Geen radarbeelden beschikbaar');
+   if(timer)clearInterval(timer);
+   const show=(i)=>{
+    const frame=frames[i];const url=data.host+frame.path+'/256/{z}/{x}/{y}/2/1_1.png';
+    if(layer)map.removeLayer(layer);
+    layer=L.tileLayer(url,{tileSize:256,opacity:.72,maxZoom:7,zIndex:10}).addTo(map);
+    stamp.textContent='LIVE RADAR · '+new Date(frame.time*1000).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})+' · RainViewer';
+   };
+   frameIndex=0;show(frameIndex);
+   timer=setInterval(()=>{frameIndex=(frameIndex+1)%frames.length;show(frameIndex);},850);
+  }
+  await refreshFrames();
+  setInterval(()=>refreshFrames().catch(()=>{stamp.textContent='Radar tijdelijk niet beschikbaar · RainViewer';}),10*60*1000);
+ }catch(e){stamp.textContent='Radar niet beschikbaar · controleer verbinding';}
+}
 const locations=[
  {name:'ROTTERDAM',country:'NEDERLAND',tz:'Europe/Amsterdam',lat:51.9244,lon:4.4777},
  {name:'AMSTERDAM',country:'NEDERLAND',tz:'Europe/Amsterdam',lat:52.3676,lon:4.9041},
