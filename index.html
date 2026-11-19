@@ -119,8 +119,9 @@ async function startLiveRadar(){
    if(timer)clearInterval(timer);
    const show=(i)=>{
     const frame=frames[i];const url=data.host+frame.path+'/256/{z}/{x}/{y}/2/1_1.png';
-    if(layer)map.removeLayer(layer);
-    layer=L.tileLayer(url,{tileSize:256,opacity:.72,maxZoom:7,zIndex:10}).addTo(map);
+    if(!layer){layer=L.tileLayer(url,{tileSize:256,opacity:.82,maxZoom:7,zIndex:10}).addTo(map);}
+    else{layer.setUrl(url);}
+    setTimeout(()=>map.invalidateSize(),100);
     stamp.textContent='LIVE RADAR · '+new Date(frame.time*1000).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})+' · RainViewer';
    };
    frameIndex=0;show(frameIndex);
@@ -130,6 +131,7 @@ async function startLiveRadar(){
   setInterval(()=>refreshFrames().catch(()=>{stamp.textContent='Radar tijdelijk niet beschikbaar · RainViewer';}),10*60*1000);
  }catch(e){stamp.textContent='Radar niet beschikbaar · controleer verbinding';}
 }
+startLiveRadar();
 const locations=[
  {name:'ROTTERDAM',country:'NEDERLAND',tz:'Europe/Amsterdam',lat:51.9244,lon:4.4777},
  {name:'AMSTERDAM',country:'NEDERLAND',tz:'Europe/Amsterdam',lat:52.3676,lon:4.9041},
