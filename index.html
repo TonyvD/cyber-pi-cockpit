@@ -108,28 +108,54 @@ async function startLiveRadar(){
    await new Promise((resolve,reject)=>{const js=document.createElement('script');js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';js.onload=resolve;js.onerror=reject;document.head.appendChild(js);});
   }
   const map=L.map('radar-map',{zoomControl:false,attributionControl:false,scrollWheelZoom:false,dragging:false,doubleClickZoom:false}).setView([52.1,5.3],5);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:7,subdomains:'abc',attribution:'© OpenStreetMap'}).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:7,subdomains:'abc'}).addTo(map);
   L.control.attribution({position:'bottomright',prefix:false}).addTo(map);
-  let layer=null,frames=[],frameIndex=0,timer=null;
-  async function refreshFrames(){
-   const response=await fetch('https://api.rainviewer.com/public/weather-maps.json',{cache:'no-store'});
-   if(!response.ok)throw new Error('Radarbron niet bereikbaar');
-   const data=await response.json();frames=(data.radar?.past||[]).slice(-12);
-   if(!frames.length)throw new Error('Geen radarbeelden beschikbaar');
-   if(timer)clearInterval(timer);
-   const show=(i)=>{
-    const frame=frames[i];const url=data.host+frame.path+'/256/{z}/{x}/{y}/2/1_0.png';
-    if(!layer){layer=L.tileLayer(url,{tileSize:256,opacity:.82,maxZoom:7,zIndex:10}).addTo(map);}
-    else{layer.setUrl(url);}
-    setTimeout(()=>map.invalidateSize(),100);
-    stamp.textContent='RADARFRAME '+(i+1)+'/'+frames.length+' · '+new Date(frame.time*1000).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})+' · RainViewer';
+  let frames=[],position=0,currentLayer=null,timer=null,loading=false;
+  const frameLayers=new Map();
+  const stop=()=>{if(timer){clearTimeout(timer);timer=null;}};
+  function showFrame(next){
+   if(loading||!frames.length)return;
+   position=(next+frames.length)%frames.length;
+   const frame=frames[position];
+   stamp.textContent='RADARFRAME '+(position+1)+'/'+frames.length+' · '+new Date(frame.time*1000).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+   const cached=frameLayers.get(position);
+   if(cached){
+    if(currentLayer)currentLayer.setOpacity(0);
+    cached.setOpacity(.82);currentLayer=cached;
+    timer=setTimeout(()=>showFrame(position+1),1100);
+    return;
+   }
+   loading=true;
+   const url=apiData.host+frame.path+'/256/{z}/{x}/{y}/2/1_1.png';
+   const nextLayer=L.tileLayer(url,{tileSize:256,opacity:0,maxNativeZoom:7,maxZoom:7,zIndex:20});
+   let finished=false;
+   const ready=()=>{
+    if(finished)return;finished=true;loading=false;
+    if(currentLayer)currentLayer.setOpacity(0);
+    nextLayer.setOpacity(.82);currentLayer=nextLayer;frameLayers.set(position,nextLayer);
+    while(frameLayers.size>4){
+     const first=frameLayers.keys().next().value;
+     if(first===position)break;
+     const old=frameLayers.get(first);map.removeLayer(old);frameLayers.delete(first);
+    }
+    timer=setTimeout(()=>showFrame(position+1),1100);
    };
-   frameIndex=0;show(frameIndex);
-   timer=setInterval(()=>{frameIndex=(frameIndex+1)%frames.length;show(frameIndex);},850);
+   nextLayer.once('load',ready);
+   nextLayer.once('tileerror',()=>{stamp.textContent='Radarbeeld laden…';});
+   nextLayer.addTo(map);
+   setTimeout(ready,5000);
   }
-  await refreshFrames();
-  setInterval(()=>refreshFrames().catch(()=>{stamp.textContent='Radar tijdelijk niet beschikbaar · RainViewer';}),10*60*1000);
- }catch(e){stamp.textContent='Radar niet beschikbaar · controleer verbinding';}
+  let apiData;
+  const response=await fetch('https://api.rainviewer.com/public/weather-maps.json',{cache:'no-store'});
+  if(!response.ok)throw new Error('RainViewer HTTP '+response.status);
+  apiData=await response.json();
+  frames=(apiData.radar?.past||[]).slice(-12);
+  if(frames.length<2)throw new Error('Te weinig radarframes ontvangen');
+  setTimeout(()=>map.invalidateSize(),150);
+  showFrame(frames.length-1);
+ }catch(e){
+  stamp.textContent='Radar niet beschikbaar: '+(e.message||'feedfout');
+ }
 }
 window.addEventListener('load',()=>startLiveRadar());
 const locations=[
