@@ -491,7 +491,8 @@ async function startFlightTracking(force=false){
   setTimeout(()=>flightMap.invalidateSize(),120);
   if(!force&&Date.now()-lastFlightFetch<150000){status.textContent='● Laatste vliegtuigwaarnemingen worden getoond';return;}
   status.textContent='Vliegtuigposities ophalen…';
-  const r=await fetch('https://api.adsb.lol/v2/lat/51.9244/lon/4.4777/dist/250',{cache:'no-store'});
+  const adsbUrl='https://api.adsb.lol/v2/lat/51.9244/lon/4.4777/dist/250';
+  const r=await fetch('https://proxy.cors.dev/?url='+encodeURIComponent(adsbUrl),{cache:'no-store',headers:{'Accept':'application/json'}});
   if(!r.ok)throw new Error('ADSB.lol HTTP '+r.status+(r.status===429?' (limiet bereikt)':''));
   const data=await r.json(),aircraft=(data.ac||[]).filter(a=>Number.isFinite(a.lat)&&Number.isFinite(a.lon)&&(!Number.isFinite(a.seen_pos)||a.seen_pos<120));
   flightMarkers.forEach(m=>flightMap.removeLayer(m));flightMarkers=[];
@@ -506,7 +507,7 @@ async function startFlightTracking(force=false){
   document.getElementById('flightStatus').textContent='● Live transponderwaarnemingen rond Rotterdam · bijgewerkt '+fmt('Europe/Amsterdam',{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date());
   document.getElementById('flightStats').innerHTML=trackingStat('Vliegtuigen:',flightMarkers.length)+trackingStat('Zoekgebied:','250 zeemijl rond Rotterdam')+trackingStat('Verversing:','3 minuten');
   if(!flightTimer)flightTimer=setInterval(()=>{if(document.getElementById('flightView').classList.contains('active'))startFlightTracking(true);},180000);
- }catch(e){status.textContent=(e instanceof TypeError?'Luchtverkeersfeed geblokkeerd door browser/CORS':'Luchtverkeersfeed niet beschikbaar: '+e.message);document.getElementById('flightStats').innerHTML=trackingStat('Status:','Geen actuele data')+trackingStat('Bron:','ADSB.lol');}
+ }catch(e){status.textContent='Luchtverkeersfeed niet beschikbaar via proxy: '+(e.message||'onbekende fout');document.getElementById('flightStats').innerHTML=trackingStat('Status:','Geen actuele data')+trackingStat('Bron:','ADSB.lol via CORS-proxy');}
 }
 document.getElementById('satelliteRefresh').addEventListener('click',()=>{window.satDataFetchedAt=0;startSatelliteTracking();});
 document.getElementById('flightRefresh').addEventListener('click',()=>startFlightTracking(true));
