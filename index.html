@@ -51,7 +51,7 @@
 #radar-live h2{position:absolute;z-index:700;top:0;left:0;right:0;margin:0;padding:9px 10px;background:linear-gradient(180deg,rgba(0,12,24,.96),rgba(0,12,24,.65));color:#5beaff;font-size:clamp(10px,1.05vw,16px);letter-spacing:.07em}
 #radar-map{position:absolute;inset:35px 0 24px;background:#020d18}
 #radar-stamp{position:absolute;z-index:700;bottom:0;left:0;right:0;padding:5px 8px;background:rgba(0,10,20,.9);font-size:clamp(8px,.65vw,10px);color:#bfefff}
-#radar-live .leaflet-container{background:#020d18!important;font:inherit}\n#radar-live .leaflet-tile-pane{filter:invert(1) hue-rotate(105deg) saturate(1.8) brightness(.62)}
+#radar-live .leaflet-container{background:#020d18!important;font:inherit}\n#radar-live .leaflet-control-attribution{display:none!important}\n#radar-live .leaflet-tile-pane{filter:invert(1) hue-rotate(105deg) saturate(1.8) brightness(.62)}
 @media(max-width:700px){#radar-live{right:.9%;top:39%;width:31%;height:27%}#radar-map{inset:30px 0 22px}}
 @media(max-width:700px){
  #net{width:31%;height:20%}#earth{width:31%;height:22%}
@@ -109,9 +109,9 @@ async function startLiveRadar(){
   }
   const map=L.map('radar-map',{zoomControl:false,attributionControl:false,scrollWheelZoom:false,dragging:false,doubleClickZoom:false}).setView([52.1,5.3],5);
   // OpenStreetMap zonder API-sleutel; alleen de basiskaart krijgt een donkere/neongroene tint.
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{subdomains:'abc',maxZoom:8,attribution:'© OpenStreetMap',zIndex:1}).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{subdomains:'abc',maxZoom:8,attribution:'',zIndex:1}).addTo(map);
   map.createPane('rainPane');map.getPane('rainPane').style.zIndex=450;
-  L.control.attribution({position:'bottomright',prefix:false}).addTo(map);
+  // Attribution badge hidden to keep the radar panel clean; provider credit remains in project documentation.
   // Align transparent live precipitation tiles with the fixed radar artwork in the cockpit background.
   
   let frames=[],position=0,currentLayer=null,timer=null,loading=false;
