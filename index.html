@@ -70,6 +70,22 @@
 #screen #brandfix strong{font-size:clamp(13px,1.75vw,27px)!important;line-height:1.05!important;color:#39dcff!important;white-space:nowrap!important}
 #screen #brandfix span{font-size:clamp(9px,.95vw,15px)!important;line-height:1.2!important;color:#75eaff!important;white-space:nowrap!important}
 #screen #clocktop{position:absolute!important;z-index:1001!important;right:0!important;top:0!important;width:18%!important;height:12%!important;padding:3px 9px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-end!important;box-sizing:border-box!important;background:rgba(2,8,18,1)!important;border:1px solid rgba(9,188,233,.65)!important;border-radius:0 0 0 8px!important;line-height:1.08!important}
+
+#drawer .tracking-view{display:none;margin-top:12px}
+#drawer .tracking-view.active{display:block}
+.tracking-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;color:#a8d9e8;font-size:12px}
+.tracking-toolbar button{background:#07324a;color:#aaf5ff;border:1px solid #1acfff;border-radius:6px;padding:7px 11px;cursor:pointer}
+.tracking-map{height:min(48vh,430px);min-height:260px;border:1px solid #087eaa;border-radius:9px;overflow:hidden;background:#020d18}
+.tracking-map .leaflet-container{background:#020d18!important}
+.tracking-stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+.tracking-stat{border:1px solid #087eaa;border-radius:7px;background:#041827;padding:7px 10px;font-size:12px;color:#c7eff9}
+.tracking-stat b{color:#54eaff}
+.tracking-credit{font-size:10px;color:#89adbd;margin-top:7px}
+.aircraft-marker{font-size:20px;line-height:24px;color:#65eaff;text-shadow:0 0 7px #00bce9,0 0 2px #001}
+.satellite-marker{border:2px solid #6fffd1;background:#053b43;border-radius:50%;box-shadow:0 0 9px #20ffc2}
+#drawer .leaflet-popup-content-wrapper,#drawer .leaflet-popup-tip{background:#041827;color:#e7faff;border:1px solid #08bde9}
+#drawer .leaflet-popup-content{margin:9px;font-size:12px}
+@media(max-width:700px){.tracking-map{height:42vh;min-height:230px}.tracking-toolbar{align-items:flex-start;flex-direction:column}}
 </style></head>
 <body><main id="screen">
 <img id="cockpit" src="cockpit.jpg" alt="Cyber Command Center cockpit met aarde en wereld in beeld">
@@ -106,7 +122,19 @@
 <nav id="tabs" aria-label="Cockpitnavigatie">
 <button aria-label="Command" data-view="command"></button><button aria-label="Navigatie" data-view="navigation"></button><button aria-label="Weer en radar" data-view="weather"></button><button aria-label="Satellieten" data-view="satellite"></button><button aria-label="Systemen" data-view="systems"></button>
 </nav>
-<section id="drawer"><button class="close" id="close">Sluiten ✕</button><h1 id="drawertitle">Wereldweer & lokale tijden</h1><div id="cities"></div><div id="footnote">Tijden zijn live en volgen automatisch zomer- en wintertijd. Weer wordt periodiek vernieuwd via Open-Meteo. Niet elke bron is realtime.</div></section>
+<section id="drawer"><button class="close" id="close">Sluiten ✕</button><h1 id="drawertitle">Wereldweer & lokale tijden</h1><div id="cities"></div><div id="footnote">Tijden zijn live en volgen automatisch zomer- en wintertijd. Weer wordt periodiek vernieuwd via Open-Meteo. Niet elke bron is realtime.</div>
+<div id="satelliteView" class="tracking-view">
+ <div class="tracking-toolbar"><span id="satelliteStatus">Satellietgegevens laden…</span><button id="satelliteRefresh" type="button">Posities vernieuwen</button></div>
+ <div id="satelliteMap" class="tracking-map"></div>
+ <div id="satelliteStats" class="tracking-stats"></div>
+ <div class="tracking-credit">Bron: CelesTrak · Orbitale elementen worden periodiek bijgewerkt; posities worden lokaal doorgerekend.</div>
+</div>
+<div id="flightView" class="tracking-view">
+ <div class="tracking-toolbar"><span id="flightStatus">Luchtverkeer laden…</span><button id="flightRefresh" type="button">Vliegtuigen vernieuwen</button></div>
+ <div id="flightMap" class="tracking-map"></div>
+ <div id="flightStats" class="tracking-stats"></div>
+ <div class="tracking-credit">Bron: ADSB.lol · Live transponderwaarnemingen, dekking verschilt per gebied. Automatische update elke 3 minuten. Data onder ODbL 1.0.</div>
+</div></section>
 </main>
 <script>
 // Live neerslagradar: RainViewer historische radarbeelden, geanimeerd.
@@ -193,10 +221,23 @@ function updateClocks(){
 }
 updateClocks();setInterval(updateClocks,1000);
 const drawer=document.getElementById('drawer'),title=document.getElementById('drawertitle');
+let trackingMode='weather';
+function showDrawerView(view){
+ trackingMode=view;
+ const sat=document.getElementById('satelliteView'),flight=document.getElementById('flightView');
+ sat.classList.toggle('active',view==='satellite');
+ flight.classList.toggle('active',view==='flight');
+ document.getElementById('cities').style.display=(view==='satellite'||view==='flight')?'none':'grid';
+ document.getElementById('footnote').style.display=(view==='satellite'||view==='flight')?'none':'block';
+ const titles={command:'CYBER COMMAND CENTER — Wereldcommandocentrum',navigation:'Wereldregio’s & tijdzones',weather:'Wereldweer & lokale tijden',satellite:'SATELLIETVOLGSYSTEEM',systems:'LUCHTVERKEERSRADAR'};
+ title.textContent=titles[view]||titles.weather;
+ drawer.classList.add('open');
+ if(view==='satellite')startSatelliteTracking();
+ if(view==='flight')startFlightTracking();
+}
 document.querySelectorAll('#tabs button').forEach(btn=>btn.addEventListener('click',()=>{
  const view=btn.dataset.view;
- const titles={command:'CYBER COMMAND CENTER — Wereldcommandocentrum',navigation:'Wereldregio’s & tijdzones',weather:'Wereldweer & lokale tijden',satellite:'Satellieten & aardobservatie',systems:'Databronnen & status'};
- title.textContent=titles[view];drawer.classList.add('open');
+ showDrawerView(view==='satellite'?'satellite':view==='systems'?'flight':view==='weather'?'weather':'weather');
 }));
 document.getElementById('close').onclick=()=>drawer.classList.remove('open');
 function icon(code){if(code===0)return '☀️';if([1,2].includes(code))return '🌤️';if(code===3)return '☁️';if([45,48].includes(code))return '🌫️';if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code))return '🌧️';if([71,73,75,77,85,86].includes(code))return '❄️';if([95,96,99].includes(code))return '⛈️';return '🌡️'}
@@ -289,6 +330,98 @@ async function loadCyberThreats(){
  document.getElementById('kevupdate').textContent='Laatste update onbekend';
  console.warn('CISA KEV feed unavailable',lastError);
 }
+
 loadCyberThreats();setInterval(loadCyberThreats,3600000);
+
+// Tracking modules: isolated in the drawer so the cockpit layout and Dutch rain radar stay untouched.
+let trackingLeafletPromise=null,satelliteLibPromise=null,satelliteMap=null,flightMap=null,satelliteMarkers=[],flightMarkers=[],satelliteRecords=[],satelliteLoop=null,flightTimer=null,lastFlightFetch=0;
+function loadScriptOnce(src,test){
+ if(test())return Promise.resolve();
+ return new Promise((resolve,reject)=>{
+  const existing=[...document.scripts].find(x=>x.src===src);
+  if(existing){existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',reject,{once:true});return;}
+  const el=document.createElement('script');el.src=src;el.onload=resolve;el.onerror=()=>reject(new Error('Bibliotheek niet geladen'));document.head.appendChild(el);
+ });
+}
+async function ensureTrackingLibraries(){
+ if(!trackingLeafletPromise)trackingLeafletPromise=loadScriptOnce('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',()=>!!window.L).then(()=>{
+  if(!document.querySelector('link[data-tracking-leaflet]')){const l=document.createElement('link');l.rel='stylesheet';l.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';l.dataset.trackingLeaflet='1';document.head.appendChild(l);}
+ });
+ await trackingLeafletPromise;
+}
+async function ensureSatelliteLibrary(){
+ if(!satelliteLibPromise)satelliteLibPromise=loadScriptOnce('https://unpkg.com/satellite.js@6.0.1/dist/satellite.min.js',()=>!!window.satellite);
+ await satelliteLibPromise;
+}
+function safePopup(v){return String(v??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function trackingStat(label,value){return '<div class="tracking-stat">'+label+' <b>'+safePopup(value)+'</b></div>';}
+async function startSatelliteTracking(){
+ const status=document.getElementById('satelliteStatus');
+ try{
+  await ensureTrackingLibraries();
+  if(!satelliteMap){satelliteMap=L.map('satelliteMap',{worldCopyJump:true}).setView([20,0],2);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:8,attribution:'© OpenStreetMap'}).addTo(satelliteMap);}
+  setTimeout(()=>satelliteMap.invalidateSize(),120);
+  if(!satelliteRecords.length||Date.now()-window.satDataFetchedAt>7200000){
+   status.textContent='Orbitale gegevens ophalen bij CelesTrak…';
+   const r=await fetch('https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=3LE',{cache:'no-store'});
+   if(!r.ok)throw new Error('CelesTrak HTTP '+r.status);
+   const lines=(await r.text()).split(/\r?\n/).map(x=>x.trim()).filter(Boolean),records=[];
+   for(let i=0;i<lines.length-2;i++){
+    if(lines[i+1].startsWith('1 ')&&lines[i+2].startsWith('2 ')){
+     try{records.push({name:lines[i].replace(/^0\s*/,''),satrec:satellite.twoline2satrec(lines[i+1],lines[i+2])});i+=2;}catch(e){}
+    }
+   }
+   if(!records.length)throw new Error('Geen satellieten ontvangen');
+   satelliteRecords=records;window.satDataFetchedAt=Date.now();
+  }
+  drawSatellitePositions();
+  if(!satelliteLoop)satelliteLoop=setInterval(()=>{if(document.getElementById('satelliteView').classList.contains('active'))drawSatellitePositions();},2000);
+ }catch(e){status.textContent='Satellietfeed niet beschikbaar: '+e.message;}
+}
+function drawSatellitePositions(){
+ if(!satelliteMap||!window.satellite||!satelliteRecords.length)return;
+ const now=new Date(),gmst=satellite.gstime(now),bounds=[];
+ satelliteMarkers.forEach(m=>satelliteMap.removeLayer(m));satelliteMarkers=[];
+ let iss=null;
+ satelliteRecords.forEach(rec=>{
+  const pv=satellite.propagate(rec.satrec,now);
+  if(!pv.position||typeof pv.position==='boolean')return;
+  const geo=satellite.eciToGeodetic(pv.position,gmst),lat=satellite.degreesLat(geo.latitude),lon=satellite.degreesLong(geo.longitude);
+  if(!Number.isFinite(lat)||!Number.isFinite(lon))return;
+  const alt=Math.round(geo.height),speed=pv.velocity?Math.round(Math.hypot(pv.velocity.x,pv.velocity.y,pv.velocity.z)*3600):null;
+  const marker=L.circleMarker([lat,lon],{radius:rec.name.toUpperCase().includes('ISS')?7:4,color:'#6fffd1',weight:1,fillColor:'#00bfa5',fillOpacity:.9}).bindPopup('<b>'+safePopup(rec.name)+'</b><br>Hoogte: '+alt.toLocaleString('nl-NL')+' km<br>Snelheid: '+(speed?speed.toLocaleString('nl-NL')+' km/u':'—'));
+  marker.addTo(satelliteMap);satelliteMarkers.push(marker);bounds.push([lat,lon]);
+  if(rec.name.toUpperCase().includes('ISS'))iss={lat,lon,alt};
+ });
+ document.getElementById('satelliteStatus').textContent='● '+satelliteMarkers.length+' gevolgde ruimtestations / satellieten · posities elke 2 sec bijgewerkt';
+ document.getElementById('satelliteStats').innerHTML=trackingStat('Objecten:',satelliteMarkers.length)+trackingStat('ISS:',iss?'in beeld':'niet in deze set')+(iss?trackingStat('ISS-hoogte:',iss.alt+' km'):'');
+}
+async function startFlightTracking(force=false){
+ const status=document.getElementById('flightStatus');
+ try{
+  await ensureTrackingLibraries();
+  if(!flightMap){flightMap=L.map('flightMap').setView([51.9244,4.4777],6);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:12,attribution:'© OpenStreetMap'}).addTo(flightMap);}
+  setTimeout(()=>flightMap.invalidateSize(),120);
+  if(!force&&Date.now()-lastFlightFetch<150000){status.textContent='● Laatste vliegtuigwaarnemingen worden getoond';return;}
+  status.textContent='Vliegtuigposities ophalen…';
+  const r=await fetch('https://api.adsb.lol/v2/lat/51.9244/lon/4.4777/dist/250',{cache:'no-store'});
+  if(!r.ok)throw new Error('ADSB.lol HTTP '+r.status+(r.status===429?' (limiet bereikt)':''));
+  const data=await r.json(),aircraft=(data.ac||[]).filter(a=>Number.isFinite(a.lat)&&Number.isFinite(a.lon)&&(!Number.isFinite(a.seen_pos)||a.seen_pos<120));
+  flightMarkers.forEach(m=>flightMap.removeLayer(m));flightMarkers=[];
+  aircraft.forEach(a=>{
+   const icon=L.divIcon({className:'',html:'<div class="aircraft-marker" style="transform:rotate('+(Number(a.track)||0)+'deg)">✈</div>',iconSize:[24,24],iconAnchor:[12,12]});
+   const alt=typeof a.alt_baro==='number'?a.alt_baro.toLocaleString('nl-NL')+' ft':(a.alt_baro||'—');
+   const speed=typeof a.gs==='number'?Math.round(a.gs)+' kt':'—';
+   const popup='<b>'+safePopup(a.flight||a.hex||'Onbekend toestel')+'</b><br>Registratie: '+safePopup(a.r||'—')+'<br>Type: '+safePopup(a.t||'—')+'<br>Hoogte: '+safePopup(alt)+'<br>Snelheid: '+safePopup(speed)+'<br>Koers: '+safePopup(Number.isFinite(a.track)?Math.round(a.track)+'°':'—');
+   const m=L.marker([a.lat,a.lon],{icon}).bindPopup(popup);m.addTo(flightMap);flightMarkers.push(m);
+  });
+  lastFlightFetch=Date.now();
+  document.getElementById('flightStatus').textContent='● Live transponderwaarnemingen rond Rotterdam · bijgewerkt '+fmt('Europe/Amsterdam',{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date());
+  document.getElementById('flightStats').innerHTML=trackingStat('Vliegtuigen:',flightMarkers.length)+trackingStat('Zoekgebied:','250 zeemijl rond Rotterdam')+trackingStat('Verversing:','3 minuten');
+  if(!flightTimer)flightTimer=setInterval(()=>{if(document.getElementById('flightView').classList.contains('active'))startFlightTracking(true);},180000);
+ }catch(e){status.textContent='Luchtverkeersfeed niet beschikbaar: '+e.message;document.getElementById('flightStats').innerHTML=trackingStat('Status:','Geen actuele data');}
+}
+document.getElementById('satelliteRefresh').addEventListener('click',()=>{window.satDataFetchedAt=0;startSatelliteTracking();});
+document.getElementById('flightRefresh').addEventListener('click',()=>startFlightTracking(true));
 
 </script></body></html>
