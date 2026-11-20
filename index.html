@@ -87,9 +87,9 @@
 #drawer .leaflet-popup-content{margin:9px;font-size:12px}
 @media(max-width:700px){.tracking-map{height:42vh;min-height:230px}.tracking-toolbar{align-items:flex-start;flex-direction:column}}
 
-.cockpit-tracking{display:flex!important;flex-direction:column;position:absolute;z-index:7;bottom:20.5%;width:32%;height:32%;padding:9px 10px;background:linear-gradient(145deg,rgba(2,17,30,.98),rgba(1,8,18,.99));border:1px solid #09bce9;border-radius:10px;box-shadow:0 0 18px rgba(0,188,233,.32);overflow:hidden;min-width:0}
-#satelliteView.cockpit-tracking{left:16.5%}
-#flightView.cockpit-tracking{right:16.5%}
+.cockpit-tracking{display:flex!important;flex-direction:column;position:absolute;z-index:7;bottom:14%;width:42%;height:42%;padding:11px 12px;background:linear-gradient(145deg,rgba(2,17,30,.98),rgba(1,8,18,.99));border:1px solid #09bce9;border-radius:10px;box-shadow:0 0 18px rgba(0,188,233,.32);overflow:hidden;min-width:0}
+#satelliteView.cockpit-tracking{left:4%}
+#flightView.cockpit-tracking{right:4%}
 .cockpit-tracking h2{font-size:clamp(9px,.9vw,14px);letter-spacing:.07em;color:#55eaff;margin:0 0 4px;white-space:nowrap}
 .cockpit-tracking .tracking-toolbar{font-size:clamp(7px,.62vw,10px);margin:0 0 4px;min-height:17px;white-space:nowrap;overflow:hidden}
 .cockpit-tracking .tracking-toolbar button{padding:2px 7px;font-size:11px;flex:0 0 auto}
@@ -433,7 +433,7 @@ async function startFlightTracking(force=false){
   document.getElementById('flightStatus').textContent='● Live transponderwaarnemingen rond Rotterdam · bijgewerkt '+fmt('Europe/Amsterdam',{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date());
   document.getElementById('flightStats').innerHTML=trackingStat('Vliegtuigen:',flightMarkers.length)+trackingStat('Zoekgebied:','250 zeemijl rond Rotterdam')+trackingStat('Verversing:','3 minuten');
   if(!flightTimer)flightTimer=setInterval(()=>{if(document.getElementById('flightView').classList.contains('active'))startFlightTracking(true);},180000);
- }catch(e){status.textContent='Luchtverkeersfeed niet beschikbaar: '+e.message;document.getElementById('flightStats').innerHTML=trackingStat('Status:','Geen actuele data');}
+ }catch(e){status.textContent=(e instanceof TypeError?'Luchtverkeersfeed geblokkeerd door browser/CORS':'Luchtverkeersfeed niet beschikbaar: '+e.message);document.getElementById('flightStats').innerHTML=trackingStat('Status:','Geen actuele data')+trackingStat('Bron:','ADSB.lol');}
 }
 document.getElementById('satelliteRefresh').addEventListener('click',()=>{window.satDataFetchedAt=0;startSatelliteTracking();});
 document.getElementById('flightRefresh').addEventListener('click',()=>startFlightTracking(true));
