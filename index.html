@@ -8,6 +8,9 @@
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020812;color:#e7faff;font-family:Arial,Helvetica,sans-serif}
 #screen{position:relative;width:100vw;height:100dvh;overflow:hidden;background:#020812}
 #cockpit{width:100%;height:100%;object-fit:fill;display:block}
+#brandfix{position:absolute;z-index:3;left:6.7%;top:11.5%;width:15%;height:6.6%;padding:0 0 0 1px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;overflow:hidden;background:linear-gradient(90deg,rgba(2,14,26,.98) 0%,rgba(2,14,26,.94) 78%,rgba(2,14,26,0) 100%);pointer-events:none;text-shadow:0 0 8px rgba(0,190,255,.35)}
+#brandfix strong{font-size:clamp(12px,1.75vw,27px);line-height:1.05;letter-spacing:.015em;color:#39dcff;white-space:nowrap}
+#brandfix span{font-size:clamp(8px,.95vw,15px);line-height:1.2;letter-spacing:.025em;color:#75eaff;white-space:nowrap}
 .panel{position:absolute;background:linear-gradient(145deg,#031522,#020914);border:1px solid #08bde9;border-radius:12px;box-shadow:inset 0 0 18px rgba(0,174,255,.12),0 0 13px rgba(0,157,255,.2);padding:clamp(7px,.75vw,13px);overflow:hidden}
 .panel h2{font-size:clamp(10px,1.1vw,17px);letter-spacing:.08em;color:#55eaff;margin:0 0 8px;text-transform:uppercase}
 #net{left:.8%;top:17.3%;width:20.7%;height:19.5%}
@@ -64,6 +67,7 @@
 </style></head>
 <body><main id="screen">
 <img id="cockpit" src="cockpit.jpg" alt="Cyber Command Center cockpit met aarde en wereld in beeld">
+<div id="brandfix" aria-label="Cyber Command Center"><strong>CYBER COMMAND</strong><span>COMMAND CENTER</span></div>
 <!-- Nieuwe panelen bedekken de oude, niet-relevante vlucht- en systeemlabels uit de achtergrondillustratie. -->
 <section class="panel" id="net"><h2>Wereldnetwerk</h2><div class="status">● OPENBARE DATA ONLINE</div>
 <div class="metric"><span>Internetstatus</span><b>Publieke bronnen</b></div>
