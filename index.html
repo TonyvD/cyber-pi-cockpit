@@ -111,7 +111,7 @@ async function startLiveRadar(){
   // Geen nieuwe wegenkaart: de originele radar uit de cockpitachtergrond blijft zichtbaar.
   L.control.attribution({position:'bottomright',prefix:false}).addTo(map);
   // Align transparent live precipitation tiles with the fixed radar artwork in the cockpit background.
-  map.getPane('tilePane').style.transform='translate3d(0,65px,0)';
+  
   let frames=[],position=0,currentLayer=null,timer=null,loading=false;
   const frameLayers=new Map();
   const stop=()=>{if(timer){clearTimeout(timer);timer=null;}};
@@ -153,7 +153,7 @@ async function startLiveRadar(){
   apiData=await response.json();
   frames=(apiData.radar?.past||[]).slice(-12);
   if(frames.length<2)throw new Error('Te weinig radarframes ontvangen');
-  setTimeout(()=>map.invalidateSize(),150);
+  setTimeout(()=>{map.invalidateSize();map.panBy([0,-105],{animate:false});},250);
   showFrame(frames.length-1);
  }catch(e){
   stamp.textContent='Radar niet beschikbaar: '+(e.message||'feedfout');
