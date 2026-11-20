@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CYBER PI — Wereldcommandocentrum</title>
+<title>CYBER COMMAND CENTER — Wereldcommandocentrum</title>
 <style>
 :root{--cyan:#39e6ff;--blue:#087eb0;--amber:#ff9b16;--glass:rgba(1,12,23,.94);--line:#09bce9}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020812;color:#e7faff;font-family:Arial,Helvetica,sans-serif}
@@ -63,7 +63,7 @@
 }
 </style></head>
 <body><main id="screen">
-<img id="cockpit" src="cockpit.jpg" alt="Cyber Pi cockpit met aarde en wereld in beeld">
+<img id="cockpit" src="cockpit.jpg" alt="Cyber Command Center cockpit met aarde en wereld in beeld">
 <!-- Nieuwe panelen bedekken de oude, niet-relevante vlucht- en systeemlabels uit de achtergrondillustratie. -->
 <section class="panel" id="net"><h2>Wereldnetwerk</h2><div class="status">● OPENBARE DATA ONLINE</div>
 <div class="metric"><span>Internetstatus</span><b>Publieke bronnen</b></div>
@@ -185,7 +185,7 @@ updateClocks();setInterval(updateClocks,1000);
 const drawer=document.getElementById('drawer'),title=document.getElementById('drawertitle');
 document.querySelectorAll('#tabs button').forEach(btn=>btn.addEventListener('click',()=>{
  const view=btn.dataset.view;
- const titles={command:'CYBER PI — Wereldcommandocentrum',navigation:'Wereldregio’s & tijdzones',weather:'Wereldweer & lokale tijden',satellite:'Satellieten & aardobservatie',systems:'Databronnen & status'};
+ const titles={command:'CYBER COMMAND CENTER — Wereldcommandocentrum',navigation:'Wereldregio’s & tijdzones',weather:'Wereldweer & lokale tijden',satellite:'Satellieten & aardobservatie',systems:'Databronnen & status'};
  title.textContent=titles[view];drawer.classList.add('open');
 }));
 document.getElementById('close').onclick=()=>drawer.classList.remove('open');
