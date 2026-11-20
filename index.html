@@ -90,6 +90,15 @@
 .cockpit-tracking{display:flex!important;flex-direction:column;position:absolute;z-index:7;bottom:14%;width:42%;height:42%;padding:11px 12px;background:linear-gradient(145deg,rgba(2,17,30,.98),rgba(1,8,18,.99));border:1px solid #09bce9;border-radius:10px;box-shadow:0 0 18px rgba(0,188,233,.32);overflow:hidden;min-width:0}
 #satelliteView.cockpit-tracking{left:4%}
 #flightView.cockpit-tracking{right:4%}
+/* Trackingpanelen gestapeld in het midden van het cockpitbeeld */
+.cockpit-tracking{width:48%;height:40%;left:26%;right:auto;bottom:auto}
+#satelliteView.cockpit-tracking{top:3%;left:26%;right:auto}
+#flightView.cockpit-tracking{top:51%;left:26%;right:auto}
+@media(max-width:700px){
+ .cockpit-tracking{width:84%;height:39%;left:8%;right:auto;bottom:auto;padding:6px}
+ #satelliteView.cockpit-tracking{top:3%;left:8%;right:auto}
+ #flightView.cockpit-tracking{top:51%;left:8%;right:auto}
+}
 .cockpit-tracking h2{font-size:clamp(9px,.9vw,14px);letter-spacing:.07em;color:#55eaff;margin:0 0 4px;white-space:nowrap}
 .cockpit-tracking .tracking-toolbar{font-size:clamp(7px,.62vw,10px);margin:0 0 4px;min-height:17px;white-space:nowrap;overflow:hidden}
 .cockpit-tracking .tracking-toolbar button{padding:2px 7px;font-size:11px;flex:0 0 auto}
