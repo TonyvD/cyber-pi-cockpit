@@ -121,6 +121,30 @@
 .cockpit-tracking .tracking-stat{font-size:clamp(7px,.58vw,9px);padding:2px 4px;white-space:nowrap}
 .cockpit-tracking .tracking-credit{font-size:7px;margin-top:2px;white-space:nowrap}
 @media(max-width:700px){.cockpit-tracking{height:25%;width:37%;bottom:19%;padding:5px}#satelliteView.cockpit-tracking{left:8%}#flightView.cockpit-tracking{right:8%}.cockpit-tracking h2{font-size:8px}.cockpit-tracking .tracking-credit{display:none}}
+
+/* Trackingvensters passend in de centrale cockpitkolom; onderzijde vrijhouden */
+#screen > #satelliteView.cockpit-tracking,
+#screen > #flightView.cockpit-tracking{
+ width:min(50vw,820px)!important;
+ height:30vh!important;
+ min-height:230px!important;
+ max-height:310px!important;
+ left:50%!important;
+ right:auto!important;
+ transform:translateX(-50%)!important;
+ bottom:auto!important;
+}
+#screen > #satelliteView.cockpit-tracking{top:2.5vh!important}
+#screen > #flightView.cockpit-tracking{top:35vh!important}
+@media(max-width:700px){
+ #screen > #satelliteView.cockpit-tracking,
+ #screen > #flightView.cockpit-tracking{
+  width:88vw!important;height:29vh!important;min-height:190px!important;max-height:250px!important;
+  left:50%!important;right:auto!important;transform:translateX(-50%)!important;padding:6px!important;
+ }
+ #screen > #satelliteView.cockpit-tracking{top:2vh!important}
+ #screen > #flightView.cockpit-tracking{top:33vh!important}
+}
 </style></head>
 <body><main id="screen">
 <img id="cockpit" src="cockpit.jpg" alt="Cyber Command Center cockpit met aarde en wereld in beeld">
