@@ -51,7 +51,7 @@
 #radar-live h2{position:absolute;z-index:700;top:0;left:0;right:0;margin:0;padding:9px 10px;background:linear-gradient(180deg,rgba(0,12,24,.96),rgba(0,12,24,.65));color:#5beaff;font-size:clamp(10px,1.05vw,16px);letter-spacing:.07em}
 #radar-map{position:absolute;inset:35px 0 24px;background:#020d18}
 #radar-stamp{position:absolute;z-index:700;bottom:0;left:0;right:0;padding:5px 8px;background:rgba(0,10,20,.9);font-size:clamp(8px,.65vw,10px);color:#bfefff}
-#radar-live .leaflet-container{background:#020d18!important;font:inherit}
+#radar-live .leaflet-container{background:#020d18!important;font:inherit}\n#radar-live .leaflet-tile-pane{filter:invert(1) hue-rotate(105deg) saturate(1.8) brightness(.62)}
 @media(max-width:700px){#radar-live{right:.9%;top:39%;width:31%;height:27%}#radar-map{inset:30px 0 22px}}
 @media(max-width:700px){
  #net{width:31%;height:20%}#earth{width:31%;height:22%}
@@ -108,8 +108,9 @@ async function startLiveRadar(){
    await new Promise((resolve,reject)=>{const js=document.createElement('script');js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';js.onload=resolve;js.onerror=reject;document.head.appendChild(js);});
   }
   const map=L.map('radar-map',{zoomControl:false,attributionControl:false,scrollWheelZoom:false,dragging:false,doubleClickZoom:false}).setView([52.1,5.3],5);
-  // Eén gedeelde donkere basiskaart onder alle radarframes; zo vallen kaart en neerslag exact samen.
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:8,attribution:'© OpenStreetMap © CARTO',zIndex:1}).addTo(map);
+  // OpenStreetMap zonder API-sleutel; alleen de basiskaart krijgt een donkere/neongroene tint.
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{subdomains:'abc',maxZoom:8,attribution:'© OpenStreetMap',zIndex:1}).addTo(map);
+  map.createPane('rainPane');map.getPane('rainPane').style.zIndex=450;
   L.control.attribution({position:'bottomright',prefix:false}).addTo(map);
   // Align transparent live precipitation tiles with the fixed radar artwork in the cockpit background.
   
@@ -130,7 +131,7 @@ async function startLiveRadar(){
    }
    loading=true;
    const url=apiData.host+frame.path+'/256/{z}/{x}/{y}/2/1_1.png';
-   const nextLayer=L.tileLayer(url,{tileSize:256,opacity:0,maxNativeZoom:7,maxZoom:7,zIndex:20});
+   const nextLayer=L.tileLayer(url,{tileSize:256,opacity:0,maxNativeZoom:7,maxZoom:7,zIndex:20,pane:'rainPane'});
    let finished=false;
    const ready=()=>{
     if(finished)return;finished=true;loading=false;
