@@ -8,6 +8,9 @@
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020812;color:#e7faff;font-family:Arial,Helvetica,sans-serif}
 #screen{position:relative;width:100vw;height:100dvh;overflow:hidden;background:#020812}
 #cockpit{width:100%;height:100%;object-fit:fill;display:block}
+#brandfix{position:absolute;z-index:6;left:.7%;top:.8%;width:21.8%;height:8.1%;padding:0 1%;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;box-sizing:border-box;overflow:hidden;background:rgba(2,12,22,.99);border-bottom:1px solid rgba(9,188,233,.55);border-right:1px solid rgba(9,188,233,.35);border-radius:0 0 9px 0;text-shadow:0 0 8px rgba(0,190,255,.35);pointer-events:none}
+#brandfix strong{font-size:clamp(13px,1.75vw,27px);line-height:1.05;letter-spacing:.015em;color:#39dcff;white-space:nowrap}
+#brandfix span{font-size:clamp(9px,.95vw,15px);line-height:1.2;letter-spacing:.025em;color:#75eaff;white-space:nowrap}
 .panel{position:absolute;background:linear-gradient(145deg,#031522,#020914);border:1px solid #08bde9;border-radius:12px;box-shadow:inset 0 0 18px rgba(0,174,255,.12),0 0 13px rgba(0,157,255,.2);padding:clamp(7px,.75vw,13px);overflow:hidden}
 .panel h2{font-size:clamp(10px,1.1vw,17px);letter-spacing:.08em;color:#55eaff;margin:0 0 8px;text-transform:uppercase}
 #net{left:.8%;top:17.3%;width:20.7%;height:19.5%}
@@ -34,7 +37,7 @@
 #tabs{position:absolute;top:0;left:23%;width:57%;height:9%;display:flex;gap:1%;z-index:4}
 #tabs button{flex:1;background:transparent;border:0;color:transparent;cursor:pointer}
 #tabs button:focus-visible{outline:2px solid var(--cyan)}
-#clocktop{position:absolute;z-index:5;right:.5%;top:.7%;width:12.5%;height:6.5%;padding:2px 5px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;box-sizing:border-box;background:rgba(2,8,18,.96);border:1px solid rgba(9,188,233,.65);border-radius:6px;font-weight:bold;font-size:clamp(10px,1.15vw,17px);line-height:1.05;text-align:right;text-shadow:0 1px 8px #000;pointer-events:none;box-shadow:0 0 8px rgba(0,188,233,.16)}
+#clocktop{position:absolute;z-index:6;right:0;top:0;width:16.5%;height:9.2%;padding:3px 9px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;box-sizing:border-box;background:rgba(2,8,18,1);border:1px solid rgba(9,188,233,.65);border-radius:0 0 0 8px;font-weight:bold;font-size:clamp(11px,1.35vw,20px);line-height:1.08;text-align:right;text-shadow:0 1px 8px #000;pointer-events:none;box-shadow:0 0 8px rgba(0,188,233,.16)}
 #clocktop small{display:block;font-size:.45em;font-weight:normal}
 #drawer{display:none;position:absolute;z-index:8;left:22%;right:22%;top:11%;bottom:22%;background:#020b16;border:1px solid var(--cyan);border-radius:14px;padding:16px;box-shadow:0 0 35px #008bc9;overflow:auto}
 #drawer.open{display:block}
@@ -64,6 +67,7 @@
 </style></head>
 <body><main id="screen">
 <img id="cockpit" src="cockpit.jpg" alt="Cyber Command Center cockpit met aarde en wereld in beeld">
+<div id="brandfix" aria-label="Cyber Command Center"><strong>CYBER COMMAND</strong><span>COMMAND CENTER</span></div>
 <!-- Nieuwe panelen bedekken de oude, niet-relevante vlucht- en systeemlabels uit de achtergrondillustratie. -->
 <section class="panel" id="net"><h2>Wereldnetwerk</h2><div class="status">● OPENBARE DATA ONLINE</div>
 <div class="metric"><span>Internetstatus</span><b>Publieke bronnen</b></div>
