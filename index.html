@@ -153,7 +153,7 @@ async function startLiveRadar(){
   apiData=await response.json();
   frames=(apiData.radar?.past||[]).slice(-12);
   if(frames.length<2)throw new Error('Te weinig radarframes ontvangen');
-  setTimeout(()=>{map.invalidateSize();map.panBy([0,-105],{animate:false});},250);
+  setTimeout(()=>map.invalidateSize(),150);
   showFrame(frames.length-1);
  }catch(e){
   stamp.textContent='Radar niet beschikbaar: '+(e.message||'feedfout');
