@@ -107,9 +107,11 @@ async function startLiveRadar(){
    const css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(css);
    await new Promise((resolve,reject)=>{const js=document.createElement('script');js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';js.onload=resolve;js.onerror=reject;document.head.appendChild(js);});
   }
-  const map=L.map('radar-map',{zoomControl:false,attributionControl:false,scrollWheelZoom:false,dragging:false,doubleClickZoom:false}).setView([66.0,5.3],5);
+  const map=L.map('radar-map',{zoomControl:false,attributionControl:false,scrollWheelZoom:false,dragging:false,doubleClickZoom:false}).setView([52.1,5.3],5);
   // Geen nieuwe wegenkaart: de originele radar uit de cockpitachtergrond blijft zichtbaar.
   L.control.attribution({position:'bottomright',prefix:false}).addTo(map);
+  // Align transparent live precipitation tiles with the fixed radar artwork in the cockpit background.
+  map.getPane('tilePane').style.transform='translate3d(0,65px,0)';
   let frames=[],position=0,currentLayer=null,timer=null,loading=false;
   const frameLayers=new Map();
   const stop=()=>{if(timer){clearTimeout(timer);timer=null;}};
